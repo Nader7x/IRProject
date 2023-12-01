@@ -1,3 +1,5 @@
 import nltk
-def Tokenize(string):
+
+
+def tokenize(string):
     return nltk.tokenize.word_tokenize(string)
