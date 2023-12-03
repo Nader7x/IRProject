@@ -18,8 +18,15 @@ def createPositionalIndex(stemmed_documents):
     return positional_index
 
 
+def view_positional_index(positional_index):
+    for term, info in positional_index.items():
+        print(f"<{term}, {info['doc_frequency']};")
+        for doc_id, positions in info["positionsAndTermFrequency"].items():
+            print(f"  doc{doc_id}: {', '.join(map(str, positions['positions']))};")
+        print(">")
 
-def isConsecutive(id, query, positional_index):
+
+def is_consecutive(id, query, positional_index):
     answer = positional_index[query[0]]["positionsAndTermFrequency"][id]["positions"]
     for i in range(1, len(query)):
         list1 = answer.copy()
@@ -42,7 +49,7 @@ def retrieve_matched_docs(query, positional_index):
             if i not in positional_index[word]["positionsAndTermFrequency"].keys():
                 valid = False
         if valid:
-            if isConsecutive(i, query, positional_index):
+            if is_consecutive(i, query, positional_index):
                 matchedDocs.append(i)
 
     return matchedDocs
