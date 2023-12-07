@@ -2,7 +2,7 @@ import Tokenizing
 import Stemming
 import PositionalIndex
 import queryAnalysis
-
+import boolean
 import views
 
 documents = []
@@ -40,42 +40,46 @@ PositionalIndex.view_positional_index(positional_index)
 
 
 choice = input("Press any key to input query. Press q to terminate the program: ")
-# def detectboolean(query):
-#     query_without_operators = []
-#     for word in list(query.split(" ")):
-#         if word not in ["AND", "OR", "NOT"]:
-#             query_without_operators.append(word)
-#     return query_without_operators
+def detectboolean(query):
+
+    #remove the and or not
+    query = query.replace("and", "")
+    query = query.replace("or", "")
+    query = query.replace("not", "")
+    return query
 
 while choice != "q" and choice != "Q":
-    query = input("Enter Query: ")
-    # query = detectboolean(query)
-    # new_query = ' '.join(query)
-    # new_query = Tokenizing.tokenize(new_query.lower())
-    # print(new_query)
+    query = input("Enter Query: ").lower()
+    booleanList = ["and", "or", "not"]
     stemmed_query = []
-    for word in query:
-        newStr = Stemming.Stemmer(word)
-        stemmed_query.append(newStr)
-    print(f"stemmed-> {stemmed_query}")
+    if any(operator in query for operator in booleanList):
+        right_docs = boolean.boolean(query, positional_index)
+        new_query = detectboolean(query)
+        new_query = Tokenizing.tokenize(new_query.lower())
+        for word in new_query:
+            newStr = Stemming.Stemmer(word)
+            stemmed_query.append(newStr)
+
+    # print(new_query)
+    else:
+        query = Tokenizing.tokenize(query.lower())
+        for word in query:
+            newStr = Stemming.Stemmer(word)
+            stemmed_query.append(newStr)
+        right_docs = PositionalIndex.retrieve_matched_docs(stemmed_query, positional_index)
     query_frequencies = queryAnalysis.calculate_term_frequency(stemmed_query)
     query_logged_frequencies = queryAnalysis.calculate_log_term_frequency(query_frequencies)
     idf_dict = queryAnalysis.calculate_idf(positional_index)
     query_tf_idf_dict = queryAnalysis.calculate_tf_idf(stemmed_query, query_logged_frequencies, idf_dict)
     query_length = queryAnalysis.calculate_query_length(query_tf_idf_dict)
     query_normalized_tf_idf = queryAnalysis.calculate_normalized_tf_idf(query_length, query_tf_idf_dict)
-    print(f"positional index before {positional_index}")
 
     docs_normalized_tf_idf = views.create_normalized_tf_idf(positional_index) #ok
-    right_docs = PositionalIndex.retrieve_matched_docs(stemmed_query, positional_index)
+
     product_and_sum_dictionary = queryAnalysis.calculate_product_and_sum(query_normalized_tf_idf,
                                                                          docs_normalized_tf_idf, right_docs,
                                                                          stemmed_query)
 
-    print(f"positional index after {positional_index}")
-    print(f"outer product -> {product_and_sum_dictionary}")
-    print(f"right docs--> {right_docs}")
-    print(f"docs_normalized_tf_idf--> {docs_normalized_tf_idf}")
     sorted_matched_docs = queryAnalysis.sort_matched_docs(product_and_sum_dictionary, right_docs)
 
     views.print_query_statistics(stemmed_query, query_frequencies, query_logged_frequencies, idf_dict,
