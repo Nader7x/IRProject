@@ -1,3 +1,6 @@
+import copy
+
+
 def createPositionalIndex(stemmed_documents):
     positional_index = {}
     # Enumerate function: takes each entry inside a list and gives it an id starting from 1
@@ -27,7 +30,7 @@ def view_positional_index(positional_index):
 
 
 def is_consecutive(id, query, positional_index):
-    answer = positional_index[query[0]]["positionsAndTermFrequency"][id]["positions"]
+    answer = copy.deepcopy(positional_index[query[0]]["positionsAndTermFrequency"][id]["positions"])
     for i in range(1, len(query)):
         list1 = answer.copy()
         answer.clear()
@@ -39,8 +42,8 @@ def is_consecutive(id, query, positional_index):
 
 
 def retrieve_matched_docs(query, positional_index):
-    #Documents that contains all the words
-    matchedDocs = []
+    # Documents that contains all the words
+    matched_docs = []
     for i in range(1, 11):
         valid = True
         for word in query:
@@ -50,6 +53,6 @@ def retrieve_matched_docs(query, positional_index):
                 valid = False
         if valid:
             if is_consecutive(i, query, positional_index):
-                matchedDocs.append(i)
+                matched_docs.append(i)
 
-    return matchedDocs
+    return matched_docs
