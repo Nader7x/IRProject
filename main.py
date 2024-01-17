@@ -4,13 +4,17 @@ import PositionalIndex
 import queryAnalysis
 import boolean
 import views
+import os
 
 documents = []
 tokenizedDocuments = []
 stemmedDocuments = []
-
-for i in range(1, 11):
-    with open('./DocumentCollection/' + str(i) + ".txt", 'r') as file:
+folder_path = './DocumentCollection'
+file_names = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+sorted_file_names = sorted(file_names, key=lambda x: int(os.path.splitext(x)[0]))
+print(f"file names: {sorted_file_names}")
+for filename in sorted_file_names:
+    with open(folder_path + '/' + filename, 'r') as file:
         content = file.read()
     documents.append(content)
 
@@ -23,9 +27,7 @@ for innerList in tokenizedDocuments:
         tempList.append(Stemming.Stemmer(token))
     stemmedDocuments.append(tempList)
 
-
 positional_index = PositionalIndex.createPositionalIndex(stemmedDocuments)
-
 
 views.print_tf(positional_index)
 views.print_log_tf(positional_index)
@@ -34,19 +36,20 @@ views.print_tf_idf(positional_index)
 views.print_doc_length()
 views.print_normalized_tf_idf(positional_index)
 
-
 print("\n=============POSITIONAL INDEX====================================================")
 PositionalIndex.view_positional_index(positional_index)
 
-
 choice = input("Press any key to input query. Press q to terminate the program: ")
-def detectboolean(query):
 
-    #remove the and or not
+
+def detect_boolean(query):
+    not_index = query.find("not")
+    # remove and or not
     query = query.replace("and", "")
     query = query.replace("or", "")
-    query = query.replace("not", "")
-    return query
+    query = query[:not_index - 3]
+    return query.strip()
+
 
 while choice != "q" and choice != "Q":
     query = input("Enter Query: ").lower()
@@ -54,7 +57,8 @@ while choice != "q" and choice != "Q":
     stemmed_query = []
     if any(operator in query for operator in booleanList):
         right_docs = boolean.boolean(query, positional_index)
-        new_query = detectboolean(query)
+        new_query = detect_boolean(query)
+        print(f"query after removal : {new_query}")
         new_query = Tokenizing.tokenize(new_query.lower())
         for word in new_query:
             newStr = Stemming.Stemmer(word)
@@ -74,7 +78,7 @@ while choice != "q" and choice != "Q":
     query_length = queryAnalysis.calculate_query_length(query_tf_idf_dict)
     query_normalized_tf_idf = queryAnalysis.calculate_normalized_tf_idf(query_length, query_tf_idf_dict)
 
-    docs_normalized_tf_idf = views.create_normalized_tf_idf(positional_index) #ok
+    docs_normalized_tf_idf = views.create_normalized_tf_idf(positional_index)  # ok
 
     product_and_sum_dictionary = queryAnalysis.calculate_product_and_sum(query_normalized_tf_idf,
                                                                          docs_normalized_tf_idf, right_docs,

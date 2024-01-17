@@ -8,7 +8,7 @@ import Stemming
 def boolean(query,positional_index):
     result = re.split(r'(\b(?:and|or|not)\b)', query)
     result = [item.strip() for item in result if item.strip()]
-    not_indices = [i for i in range(len(result)) if result[i] == 'not']
+    not_indices = [i for i in range(len(result)) if result[i] == 'not'] # get the indices of the not
     for i in sorted(not_indices, reverse=True):
         stemmed_query = []
         query = Tokenizing.tokenize(result[i + 1].lower())
@@ -21,7 +21,7 @@ def boolean(query,positional_index):
         result = result[:i] + result[i + 2:]
         # insert the retrieved docs in the place of the not
         result.insert(i, retrieved_docs)
-    or_indices = [i for i in range(len(result)) if result[i] == 'or']
+    or_indices = [i for i in range(len(result)) if result[i] == 'or'] # get the indices of the or
     for i in sorted(or_indices, reverse=True):
         before = []
         after = []
@@ -50,7 +50,7 @@ def boolean(query,positional_index):
         result = result[:i - 1] + result[i + 2:]
         # insert the union in the place of the or
         result.insert(i - 1, union)
-    and_indices = [i for i in range(len(result)) if result[i] == 'and']
+    and_indices = [i for i in range(len(result)) if result[i] == 'and'] # get the indices of the and
     for i in sorted(and_indices, reverse=True):
         before = []
         after = []
